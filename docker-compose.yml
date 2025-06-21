@@ -1,45 +1,31 @@
 version: '3.9'
 
 services:
-master:
-image: redis:latest
-container_name: redis-master
   master:
     image: redis:latest
     container_name: redis-master
+    ports:
+      - "6379:6379"
 
-slave:
-image: redis:latest
-container_name: redis-slave
-command: redis-server --slaveof redis-master 6379
-depends_on:
-- master
   slave:
     image: redis:latest
     container_name: redis-slave
     command: redis-server --slaveof redis-master 6379
+    ports:
+      - "6380:6379"
     depends_on:
-    - master
+      - master
 
-sentinel:
-build:
-context: ./sentinel
-dockerfile: Dockerfile
-container_name: redis-sentinel
-environment:
-- SENTINEL_DOWN_AFTER=5000
-- SENTINEL_FAILOVER=5000
-depends_on:
-- master
-- slave
   sentinel:
     build:
       context: ./sentinel
       dockerfile: Dockerfile
     container_name: redis-sentinel
+    ports:
+      - "26379:26379"
     environment:
       - SENTINEL_DOWN_AFTER=5000
       - SENTINEL_FAILOVER=5000
     depends_on:
-    - master
-    - slave
+      - master
+      - slave
